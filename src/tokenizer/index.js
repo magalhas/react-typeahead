@@ -1,7 +1,3 @@
-/**
- * @jsx React.DOM
- */
-
 var React = require('react');
 var Token = require('./token');
 var KeyEvent = require('../keyevent');

@@ -1,4 +1,10 @@
 !function(e){if("object"==typeof exports&&"undefined"!=typeof module)module.exports=e();else if("function"==typeof define&&define.amd)define([],e);else{var f;"undefined"!=typeof window?f=window:"undefined"!=typeof global?f=global:"undefined"!=typeof self&&(f=self),f.ReactTypeahead=e()}}(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+/*!
+  Copyright (c) 2015 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+
 function classNames() {
 	var classes = '';
 	var arg;
@@ -25,9 +31,16 @@ function classNames() {
 	return classes.substr(1);
 }
 
-// safely export classNames in case the script is included directly on a page
+// safely export classNames for node / browserify
 if (typeof module !== 'undefined' && module.exports) {
 	module.exports = classNames;
+}
+
+// safely export classNames for RequireJS
+if (typeof define !== 'undefined' && define.amd) {
+	define('classnames', [], function() {
+		return classNames;
+	});
 }
 
 },{}],2:[function(require,module,exports){
@@ -86,7 +99,7 @@ fuzzy.match = function(pattern, string, opts) {
   pattern = opts.caseSensitive && pattern || pattern.toLowerCase();
 
   // For each character in the string, either add it to the result
-  // or wrap in template if its the next string in the pattern
+  // or wrap in template if it's the next string in the pattern
   for(var idx = 0; idx < len; idx++) {
     ch = string[idx];
     if(compareString[idx] === pattern[patternIdx]) {
@@ -128,8 +141,8 @@ fuzzy.match = function(pattern, string, opts) {
 //        // string to put after matching character
 //      , post:    '</b>'
 //
-//        // Optional function. Input is an element from the passed in
-//        // `arr`, output should be the string to test `pattern` against.
+//        // Optional function. Input is an entry in the given arr`,
+//        // output should be the string to test `pattern` against.
 //        // In this example, if `arr = [{crying: 'koala'}]` we would return
 //        // 'koala'.
 //      , extract: function(arg) { return arg.crying; }
@@ -137,31 +150,31 @@ fuzzy.match = function(pattern, string, opts) {
 fuzzy.filter = function(pattern, arr, opts) {
   opts = opts || {};
   return arr
-          .reduce(function(prev, element, idx, arr) {
-            var str = element;
-            if(opts.extract) {
-              str = opts.extract(element);
-            }
-            var rendered = fuzzy.match(pattern, str, opts);
-            if(rendered != null) {
-              prev[prev.length] = {
-                  string: rendered.rendered
-                , score: rendered.score
-                , index: idx
-                , original: element
-              };
-            }
-            return prev;
-          }, [])
+    .reduce(function(prev, element, idx, arr) {
+      var str = element;
+      if(opts.extract) {
+        str = opts.extract(element);
+      }
+      var rendered = fuzzy.match(pattern, str, opts);
+      if(rendered != null) {
+        prev[prev.length] = {
+            string: rendered.rendered
+          , score: rendered.score
+          , index: idx
+          , original: element
+        };
+      }
+      return prev;
+    }, [])
 
-          // Sort by score. Browsers are inconsistent wrt stable/unstable
-          // sorting, so force stable by using the index in the case of tie.
-          // See http://ofb.net/~sethml/is-sort-stable.html
-          .sort(function(a,b) {
-            var compare = b.score - a.score;
-            if(compare) return compare;
-            return a.index - b.index;
-          });
+    // Sort by score. Browsers are inconsistent wrt stable/unstable
+    // sorting, so force stable by using the index in the case of tie.
+    // See http://ofb.net/~sethml/is-sort-stable.html
+    .sort(function(a,b) {
+      var compare = b.score - a.score;
+      if(compare) return compare;
+      return a.index - b.index;
+    });
 };
 
 
@@ -195,10 +208,6 @@ module.exports = {
 
 
 },{"./tokenizer":5,"./typeahead":7}],5:[function(require,module,exports){
-/**
- * @jsx React.DOM
- */
-
 var React = window.React || require('react');
 var Token = require('./token');
 var KeyEvent = require('../keyevent');
@@ -402,10 +411,6 @@ module.exports = TypeaheadTokenizer;
 
 
 },{"../keyevent":3,"../typeahead":7,"./token":6,"classnames":1,"react":"react"}],6:[function(require,module,exports){
-/**
- * @jsx React.DOM
- */
-
 var React = window.React || require('react');
 var classNames = require('classnames');
 
@@ -472,10 +477,6 @@ module.exports = Token;
 
 
 },{"classnames":1,"react":"react"}],7:[function(require,module,exports){
-/**
- * @jsx React.DOM
- */
-
 var React = window.React || require('react');
 var TypeaheadSelector = require('./selector');
 var KeyEvent = require('../keyevent');
@@ -500,11 +501,13 @@ var Typeahead = React.createClass({displayName: "Typeahead",
     maxVisible: React.PropTypes.number,
     options: React.PropTypes.array,
     allowCustomValues: React.PropTypes.number,
+    focusOnOptionSelected: React.PropTypes.bool,
     defaultValue: React.PropTypes.string,
     value: React.PropTypes.string,
     placeholder: React.PropTypes.string,
     textarea: React.PropTypes.bool,
     inputProps: React.PropTypes.object,
+    preventKeyEvents: React.PropTypes.bool,
     onOptionSelected: React.PropTypes.func,
     onChange: React.PropTypes.func,
     onKeyDown: React.PropTypes.func,
@@ -535,11 +538,13 @@ var Typeahead = React.createClass({displayName: "Typeahead",
       options: [],
       customClasses: {},
       allowCustomValues: 0,
+      focusOnOptionSelected: true,
       defaultValue: "",
       value: null,
       placeholder: "",
       textarea: false,
       inputProps: {},
+      preventKeyEvents: true,
       onOptionSelected: function(option) {},
       onChange: function(event) {},
       onKeyDown: function(event) {},
@@ -583,7 +588,7 @@ var Typeahead = React.createClass({displayName: "Typeahead",
   },
 
   focus: function(){
-    React.findDOMNode(this.refs.entry).focus()
+    React.findDOMNode(this.refs.entry).focus();
   },
 
   _hasCustomValue: function() {
@@ -613,16 +618,18 @@ var Typeahead = React.createClass({displayName: "Typeahead",
       return "";
     }
 
-    return (
-      React.createElement(this.props.customListComponent, {
-        ref: "sel", options: this.state.visible, 
-        onOptionSelected: this._onOptionSelected, 
-        customValue: this._getCustomValue(), 
-        customClasses: this.props.customClasses, 
-        selectionIndex: this.state.selectionIndex, 
-        defaultClassNames: this.props.defaultClassNames, 
-        displayOption: this._generateOptionToStringFor(this.props.displayOption)})
-    );
+    if (this.state.visible.length || this._getCustomValue()) {
+      return (
+        React.createElement(this.props.customListComponent, {
+          ref: "sel", options: this.state.visible, 
+          onOptionSelected: this._onOptionSelected, 
+          customValue: this._getCustomValue(), 
+          customClasses: this.props.customClasses, 
+          selectionIndex: this.state.selectionIndex, 
+          defaultClassNames: this.props.defaultClassNames, 
+          displayOption: this._generateOptionToStringFor(this.props.displayOption)})
+      );
+    }
   },
 
   getSelection: function() {
@@ -639,7 +646,9 @@ var Typeahead = React.createClass({displayName: "Typeahead",
 
   _onOptionSelected: function(option, event) {
     var nEntry = this.refs.entry.getDOMNode();
-    nEntry.focus();
+    if (this.props.focusOnOptionSelected) {
+      nEntry.focus();
+    }
 
     var displayOption = this._generateOptionToStringFor(this.props.displayOption);
     var optionString = displayOption(option, 0);
@@ -751,7 +760,9 @@ var Typeahead = React.createClass({displayName: "Typeahead",
       return this.props.onKeyDown(event);
     }
     // Don't propagate the keystroke back to the DOM/browser
-    event.preventDefault();
+    if (this.props.preventKeyEvents) {
+      event.preventDefault();
+    }
   },
 
   componentWillReceiveProps: function(nextProps) {
@@ -848,10 +859,6 @@ module.exports = Typeahead;
 
 
 },{"../keyevent":3,"./selector":9,"classnames":1,"fuzzy":2,"react":"react"}],8:[function(require,module,exports){
-/**
- * @jsx React.DOM
- */
-
 var React = window.React || require('react');
 var classNames = require('classnames');
 
@@ -916,10 +923,6 @@ module.exports = TypeaheadOption;
 
 
 },{"classnames":1,"react":"react"}],9:[function(require,module,exports){
-/**
- * @jsx React.DOM
- */
-
 var React = window.React || require('react');
 var TypeaheadOption = require('./option');
 var classNames = require('classnames');

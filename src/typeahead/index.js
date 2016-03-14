@@ -1,7 +1,3 @@
-/**
- * @jsx React.DOM
- */
-
 var React = require('react');
 var TypeaheadSelector = require('./selector');
 var KeyEvent = require('../keyevent');
