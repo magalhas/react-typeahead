@@ -1,4 +1,5 @@
 var React = require('react');
+var findDOMNode = require('react-dom').findDOMNode;
 var TypeaheadSelector = require('./selector');
 var KeyEvent = require('../keyevent');
 var fuzzy = require('fuzzy');
@@ -104,12 +105,12 @@ var Typeahead = React.createClass({
   },
 
   setEntryText: function(value) {
-    this.refs.entry.getDOMNode().value = value;
+    findDOMNode(this.entry).value = value;
     this._onTextEntryUpdated();
   },
 
   focus: function(){
-    React.findDOMNode(this.refs.entry).focus();
+    findDOMNode(this.entry).focus();
   },
 
   _hasCustomValue: function() {
@@ -166,7 +167,7 @@ var Typeahead = React.createClass({
   },
 
   _onOptionSelected: function(option, event) {
-    var nEntry = this.refs.entry.getDOMNode();
+    var nEntry = findDOMNode(this.entry);
     if (this.props.focusOnOptionSelected) {
       nEntry.focus();
     }
@@ -185,7 +186,7 @@ var Typeahead = React.createClass({
   },
 
   _onTextEntryUpdated: function() {
-    var value = this.refs.entry.getDOMNode().value;
+    var value = findDOMNode(this.entry).value;
     this.setState({visible: this.getOptionsForValue(value, this.props.options),
                    selection: null,
                    entryValue: value});
@@ -205,7 +206,7 @@ var Typeahead = React.createClass({
     });
   },
 
-  _onTab: function(event) {
+  _onTab:function(event) {
     var selection = this.getSelection();
     var option = selection ?
       selection : (this.state.visible.length > 0 ? this.state.visible[0] : null);
@@ -308,7 +309,9 @@ var Typeahead = React.createClass({
     return (
       <div className={classList}>
         { this._renderHiddenInput() }
-        <InputElement ref="entry" type="text"
+        <InputElement
+          ref={el => (this.entry = el)}
+          type="text"
           {...this.props.inputProps}
           placeholder={this.props.placeholder}
           className={inputClassList}

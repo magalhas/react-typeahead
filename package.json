@@ -36,7 +36,8 @@
     "fuzzy": "^0.1.0"
   },
   "peerDependencies": {
-    "react": ">= 0.13.0"
+    "react": ">= 0.14.0",
+    "react-dom": ">= 0.14.0"
   },
   "main": "lib/react-typeahead.js",
   "devDependencies": {
@@ -49,6 +50,8 @@
     "literalify": "^0.4.0",
     "lodash": "^2.4.1",
     "mocha": "^1.21.4",
+    "react": "^0.14.0",
+    "react-dom": "^0.14.0",
     "react-tools": "^0.13.0",
     "reactify": "^1.0.0",
     "sinon": "^1.10.3",

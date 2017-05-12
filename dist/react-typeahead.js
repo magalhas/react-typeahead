@@ -68,23 +68,23 @@ if (typeof exports !== 'undefined') {
 // Return all elements of `array` that have a fuzzy
 // match against `pattern`.
 fuzzy.simpleFilter = function(pattern, array) {
-  return array.filter(function(string) {
-    return fuzzy.test(pattern, string);
+  return array.filter(function(str) {
+    return fuzzy.test(pattern, str);
   });
 };
 
-// Does `pattern` fuzzy match `string`?
-fuzzy.test = function(pattern, string) {
-  return fuzzy.match(pattern, string) !== null;
+// Does `pattern` fuzzy match `str`?
+fuzzy.test = function(pattern, str) {
+  return fuzzy.match(pattern, str) !== null;
 };
 
-// If `pattern` matches `string`, wrap each matching character
+// If `pattern` matches `str`, wrap each matching character
 // in `opts.pre` and `opts.post`. If no match, return null
-fuzzy.match = function(pattern, string, opts) {
+fuzzy.match = function(pattern, str, opts) {
   opts = opts || {};
   var patternIdx = 0
     , result = []
-    , len = string.length
+    , len = str.length
     , totalScore = 0
     , currScore = 0
     // prefix
@@ -93,15 +93,15 @@ fuzzy.match = function(pattern, string, opts) {
     , post = opts.post || ''
     // String to compare against. This might be a lowercase version of the
     // raw string
-    , compareString =  opts.caseSensitive && string || string.toLowerCase()
-    , ch, compareChar;
+    , compareString =  opts.caseSensitive && str || str.toLowerCase()
+    , ch;
 
   pattern = opts.caseSensitive && pattern || pattern.toLowerCase();
 
   // For each character in the string, either add it to the result
   // or wrap in template if it's the next string in the pattern
   for(var idx = 0; idx < len; idx++) {
-    ch = string[idx];
+    ch = str[idx];
     if(compareString[idx] === pattern[patternIdx]) {
       ch = pre + ch + post;
       patternIdx += 1;
@@ -117,6 +117,8 @@ fuzzy.match = function(pattern, string, opts) {
 
   // return rendered string if we have a match for every char
   if(patternIdx === pattern.length) {
+    // if the string is an exact match with pattern, totalScore should be maxed
+    totalScore = (compareString === pattern) ? Infinity : totalScore;
     return {rendered: result.join(''), score: totalScore};
   }
 
@@ -148,6 +150,12 @@ fuzzy.match = function(pattern, string, opts) {
 //      , extract: function(arg) { return arg.crying; }
 //    }
 fuzzy.filter = function(pattern, arr, opts) {
+  if(!arr || arr.length === 0) {
+    return [];
+  }
+  if (typeof pattern !== 'string') {
+    return arr;
+  }
   opts = opts || {};
   return arr
     .reduce(function(prev, element, idx, arr) {
@@ -208,7 +216,7 @@ module.exports = {
 
 
 },{"./tokenizer":5,"./typeahead":7}],5:[function(require,module,exports){
-var React = window.React || require('react');
+var React = require('react');
 var Token = require('./token');
 var KeyEvent = require('../keyevent');
 var Typeahead = require('../typeahead');
@@ -411,7 +419,7 @@ module.exports = TypeaheadTokenizer;
 
 
 },{"../keyevent":3,"../typeahead":7,"./token":6,"classnames":1,"react":"react"}],6:[function(require,module,exports){
-var React = window.React || require('react');
+var React = require('react');
 var classNames = require('classnames');
 
 /**
@@ -477,7 +485,8 @@ module.exports = Token;
 
 
 },{"classnames":1,"react":"react"}],7:[function(require,module,exports){
-var React = window.React || require('react');
+var React = require('react');
+var findDOMNode = require('react-dom').findDOMNode;
 var TypeaheadSelector = require('./selector');
 var KeyEvent = require('../keyevent');
 var fuzzy = require('fuzzy');
@@ -583,12 +592,12 @@ var Typeahead = React.createClass({displayName: "Typeahead",
   },
 
   setEntryText: function(value) {
-    this.refs.entry.getDOMNode().value = value;
+    findDOMNode(this.entry).value = value;
     this._onTextEntryUpdated();
   },
 
   focus: function(){
-    React.findDOMNode(this.refs.entry).focus();
+    findDOMNode(this.entry).focus();
   },
 
   _hasCustomValue: function() {
@@ -645,7 +654,7 @@ var Typeahead = React.createClass({displayName: "Typeahead",
   },
 
   _onOptionSelected: function(option, event) {
-    var nEntry = this.refs.entry.getDOMNode();
+    var nEntry = findDOMNode(this.entry);
     if (this.props.focusOnOptionSelected) {
       nEntry.focus();
     }
@@ -664,7 +673,7 @@ var Typeahead = React.createClass({displayName: "Typeahead",
   },
 
   _onTextEntryUpdated: function() {
-    var value = this.refs.entry.getDOMNode().value;
+    var value = findDOMNode(this.entry).value;
     this.setState({visible: this.getOptionsForValue(value, this.props.options),
                    selection: null,
                    entryValue: value});
@@ -787,7 +796,9 @@ var Typeahead = React.createClass({displayName: "Typeahead",
     return (
       React.createElement("div", {className: classList}, 
          this._renderHiddenInput(), 
-        React.createElement(InputElement, React.__spread({ref: "entry", type: "text"}, 
+        React.createElement(InputElement, React.__spread({
+          ref: el => (this.entry = el), 
+          type: "text"}, 
           this.props.inputProps, 
           {placeholder: this.props.placeholder, 
           className: inputClassList, 
@@ -858,8 +869,8 @@ var Typeahead = React.createClass({displayName: "Typeahead",
 module.exports = Typeahead;
 
 
-},{"../keyevent":3,"./selector":9,"classnames":1,"fuzzy":2,"react":"react"}],8:[function(require,module,exports){
-var React = window.React || require('react');
+},{"../keyevent":3,"./selector":9,"classnames":1,"fuzzy":2,"react":"react","react-dom":"react-dom"}],8:[function(require,module,exports){
+var React = require('react');
 var classNames = require('classnames');
 
 /**
@@ -923,7 +934,7 @@ module.exports = TypeaheadOption;
 
 
 },{"classnames":1,"react":"react"}],9:[function(require,module,exports){
-var React = window.React || require('react');
+var React = require('react');
 var TypeaheadOption = require('./option');
 var classNames = require('classnames');
 

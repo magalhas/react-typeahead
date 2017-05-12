@@ -40,7 +40,8 @@ var TypeaheadSelector = React.createClass({
     if (this.props.customValue !== null) {
       customValueOffset++;
       customValue = (
-        <TypeaheadOption ref={this.props.customValue} key={this.props.customValue}
+        <TypeaheadOption ref={this.props.customValue}
+          key={this.props.customValue}
           hover={this.props.selectionIndex === 0}
           customClasses={this.props.customClasses}
           customValue={this.props.customValue}
@@ -54,7 +55,8 @@ var TypeaheadSelector = React.createClass({
       var displayString = this.props.displayOption(result, i);
       var uniqueKey = displayString + '_' + i;
       return (
-        <TypeaheadOption ref={uniqueKey} key={uniqueKey}
+        <TypeaheadOption ref={el => (this[uniqueKey] = el)}
+          key={uniqueKey}
           hover={this.props.selectionIndex === i + customValueOffset}
           customClasses={this.props.customClasses}
           onClick={this._onClick.bind(this, result)}>
